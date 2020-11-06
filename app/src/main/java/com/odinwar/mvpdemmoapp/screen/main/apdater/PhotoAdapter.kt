@@ -1,15 +1,15 @@
 package com.odinwar.mvpdemmoapp.screen.main.apdater
 
+import android.os.AsyncTask
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.odinwar.mvpdemmoapp.R
 import com.odinwar.mvpdemmoapp.data.model.Photo
+import com.odinwar.mvpdemmoapp.utils.LoadImageFromUrl
 import com.odinwar.mvpdemmoapp.utils.OnItemRecyclerViewClickListener
-import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.item_photo.view.*
 
 class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
@@ -34,6 +34,8 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.itemView.imageViewPicture.setImageDrawable(null)
+        holder.itemView.imageViewUser.setImageDrawable(null)
         holder.bind(photos[position])
     }
 
@@ -41,17 +43,27 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
         View.OnClickListener {
-        private val imageViewURL = itemView.findViewById<ImageView>(R.id.imageViewUrl)
-        private val imageViewUser = itemView.findViewById<ImageView>(R.id.imageViewUser)
-        private val textViewDescription = itemView.findViewById<TextView>(R.id.textViewDescription)
-        private val textViewUserEmail = itemView.findViewById<TextView>(R.id.textViewUserName)
-        private var listener = onItemRecyclerViewClickListener
+        private val listener = onItemRecyclerViewClickListener
+
         fun bind(photo: Photo) {
             itemView.setOnClickListener(this)
-            Picasso.get().load(photo.photoUrl).resize(145, 145).into(imageViewURL)
-            Picasso.get().load(photo.photoUserUrl).resize(48, 48).into(imageViewUser)
-            textViewDescription.text = photo.description
-            textViewUserEmail.text = photo.userName
+            loadImage(photo.photoUrl, R.id.imageViewUrl)
+            loadImage(photo.photoUserUrl, R.id.imageViewUser)
+            itemView.textViewDescription.text = photo.description
+            itemView.textViewUserName.text = photo.userName
+        }
+
+        private fun loadImage(imageUrl: String, id: Int) {
+            when (id) {
+                R.id.imageViewUrl -> LoadImageFromUrl(itemView.imageViewPicture).executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    imageUrl
+                )
+                R.id.imageViewUser -> LoadImageFromUrl(itemView.imageViewUser).executeOnExecutor(
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    imageUrl
+                )
+            }
         }
 
         override fun onClick(v: View?) {
